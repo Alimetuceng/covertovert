@@ -1,5 +1,5 @@
 from CovertChannelBase import CovertChannelBase
-from scapy.all import IP, Raw, sniff, send
+from scapy.all import IP, Raw, sniff
 
 
 class MyCovertChannel(CovertChannelBase):
@@ -25,18 +25,24 @@ class MyCovertChannel(CovertChannelBase):
 
     def receive(self, **kwargs):
 
-        # Function to process received packets
         def process_packet(pckt):
             if pckt.haslayer(IP) and pckt[IP].ttl == 1:
-                print("Raw IP packet received!")
                 if pckt.haslayer(Raw):
-                    print(f"Payload: {pckt[Raw].load}")
-                    log_file_name = kwargs.get("log_file_name")
-                    self.log_message(message="payloadContentHere", log_file_name=log_file_name)
 
 
-        # Start sniffing for IP packets
+                    payload = pckt[Raw].load.decode("utf-8", errors="ignore")
+                    print(f"Payload: {payload}")
+                    
+                    
+                    # Log the received payload
+                    log_file_name = kwargs.get("log_file_name", "receiver.log")  # Default log file if none provided
+                    self.log_message(message=payload, log_file_name=log_file_name)
+
+
+        
         print("Waiting for raw IP packets...")
+
+
         sniff(filter="ip", prn=process_packet, timeout=10)
 
         
