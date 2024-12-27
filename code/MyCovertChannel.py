@@ -5,8 +5,7 @@ from scapy.all import IP, Raw, sniff
 class MyCovertChannel(CovertChannelBase):
     def send(self, **kwargs):
 
-
-        message = "  Raw packet payload 2.0 extra platinium etc"
+        message = self.generate_random_message( min_length=50, max_length=100)
         payload = Raw(load=message)
 
 
@@ -34,8 +33,7 @@ class MyCovertChannel(CovertChannelBase):
                     print(f"Payload: {payload}")
                     
                     
-                    # Log the received payload
-                    log_file_name = kwargs.get("log_file_name", "receiver.log")  # Default log file if none provided
+                    log_file_name = kwargs.get("log_file_name")
                     self.log_message(message=payload, log_file_name=log_file_name)
 
 
