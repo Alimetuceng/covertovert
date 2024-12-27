@@ -24,14 +24,20 @@ class MyCovertChannel(CovertChannelBase):
         index = 1
 
         for bit in binary_message:
-
-            if(bit == "1"):
-                payload = Raw(load="1" * 100)  # Long payload
-            else:
-                payload = Raw(load="0" * 10)  # Short payload 
             
             ip_layer = IP(dst="receiver", ttl=1)
-            super().send(ip_layer / payload)
+            header_size = len(ip_layer)
+        
+            if(bit == "1"):
+                payload = Raw(load="1" * (header_size + 10))  # Payload larger than header
+            else:
+                payload = Raw(load="0" * (header_size - 5))  # Payload smaller than header
+            
+
+            pckt = ip_layer / payload
+
+
+            super().send(pckt)
 
             
 
@@ -51,11 +57,16 @@ class MyCovertChannel(CovertChannelBase):
 
         def process_packet(pckt):
             nonlocal received_bits, decoded_message
-
+            
+            
+            
             if pckt.haslayer(IP) and pckt[IP].ttl == 1 and pckt.haslayer(Raw):
                 
-                payload_length = len(pckt[Raw].load)
-                if payload_length > 50:
+                
+                payload_size = len(pckt[Raw].load)
+                header_size = len(pckt[IP]) - payload_size
+
+                if payload_size > header_size:
                     bit = "1" 
                 else:
                     bit = "0"  # Threshold for long/short payload
