@@ -21,13 +21,14 @@ class MyCovertChannel(CovertChannelBase):
 
         print(f"Input Binary Message: {binary_message}\n")
 
-
         index = 1
 
         for bit in binary_message:
 
-            payload = Raw(load=bit)
-            
+            if(bit == "1"):
+                payload = Raw(load="1" * 100)  # Long payload
+            else:
+                payload = Raw(load="0" * 10)  # Short payload 
             
             ip_layer = IP(dst="receiver", ttl=1)
             super().send(ip_layer / payload)
@@ -46,12 +47,20 @@ class MyCovertChannel(CovertChannelBase):
         received_bits = []
         decoded_message = []
 
+        stop_sniffing = {"stop": False}
+
         def process_packet(pckt):
             nonlocal received_bits, decoded_message
 
             if pckt.haslayer(IP) and pckt[IP].ttl == 1 and pckt.haslayer(Raw):
-
-                bit = pckt[Raw].load.decode("utf-8", errors="ignore")
+                
+                payload_length = len(pckt[Raw].load)
+                if payload_length > 50:
+                    bit = "1" 
+                else:
+                    bit = "0"  # Threshold for long/short payload
+                
+                
                 received_bits.append(bit)
 
 
@@ -60,12 +69,20 @@ class MyCovertChannel(CovertChannelBase):
                     char = self.convert_eight_bits_to_character("".join(received_bits))
                     decoded_message.append(char)
 
+                    if(char == '.'):
+                        stop_sniffing["stop"] = True
+                        return
+
                     received_bits = []
 
                     print(f"Converted 8 bits to character: {char}\n")
                     
 
-        sniff(filter="ip", prn=process_packet, timeout=20)
+        sniff(
+            filter="ip",
+            prn=process_packet,
+            stop_filter=lambda x: stop_sniffing["stop"]
+        )
 
         merged_message = "".join(decoded_message)
         self.log_message(message=merged_message, log_file_name=log_file_name)
