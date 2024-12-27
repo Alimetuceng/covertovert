@@ -4,33 +4,48 @@ from scapy.all import IP, Raw, sniff
 
 class MyCovertChannel(CovertChannelBase):
 
+    def decode_message(self, input_message, chunk_size=20):
+        """
+        Encodes the input message by splitting it into chunks.
+        """
+        return [input_message[i:i + chunk_size] for i in range(0, len(input_message), chunk_size)]
+
+
+    def encode_message(self, input_message, chunk_size=20):
+        message_chunks = []
+
+        for i in range(0, len(input_message), chunk_size):
+            chunk = input_message[i:i + chunk_size] 
+            message_chunks.append(chunk)
+        
+        return message_chunks
+
+
+
+
 
     def send(self, **kwargs):
 
-
-        sent_messages = []
+        log_file_name = kwargs.get("log_file_name")
+        input_message = self.generate_random_binary_message_with_logging( log_file_name=log_file_name, min_length=50, max_length=100)
         
-        for i in range(5):
 
-            message = self.generate_random_message( min_length=50, max_length=100)
-            sent_messages.append(message)
+        index = 1
+        for chunk in input_message:
+
+            if(chunk == '0'):
+                message = '0'
+            else:
+                message = '1'
             
             payload = Raw(load=message)
             
-
             ip_layer = IP(dst="receiver", ttl=1)
             super().send(ip_layer / payload)
 
+            print(f"Message Chunk {index} sent: {chunk}\n")
+            index += 1
 
-            print(f"Message {i + 1} sent: {message}\n")
-
-        
-        log_file_name = kwargs.get("log_file_name")
-        merged_messages = "".join(sent_messages)
-        self.log_message(message=merged_messages, log_file_name=log_file_name)
-        
-        
-        print("Raw packets are sent successfully!\n")
 
 
 
@@ -48,6 +63,9 @@ class MyCovertChannel(CovertChannelBase):
                     
 
                     received_messages.append(payload_message)
+                    
+                    
+                    
                     print(f"Payload: {payload_message} is added to received_messages.\n")
 
         
