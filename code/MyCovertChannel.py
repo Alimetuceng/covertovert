@@ -1,29 +1,29 @@
 from CovertChannelBase import CovertChannelBase
-from scapy.all import IP, ICMP, sniff
+from scapy.all import IP, Raw, sniff, send
 
 
 class MyCovertChannel(CovertChannelBase):
     def send(self, **kwargs):
-        # Destination hostname or IP
-        dest = "receiver"
 
-        # Define the IP and ICMP layers
-        ip_layer = IP(dst=dest, ttl=1)
-        icmp_layer = ICMP()
+        ip_layer = IP(dst="receiver", ttl=1)
 
-        # Send the packet
-        print(f"Sending packet to {dest}...")
-        super().send(ip_layer / icmp_layer)
-        print("Packet sent successfully!")
+        # Add an optional payload (Raw layer)
+        message = "  Raw packet payload  "
+        payload = Raw(load=message)
+
+        super().send(ip_layer / payload)
+
+        print("Raw IP packet sent successfully!")
 
     def receive(self, **kwargs):
+
         # Function to process received packets
         def process_packet(pckt):
-            if pckt.haslayer(ICMP) and pckt[IP].ttl == 1:
-                print("Packet received!")
-                pckt.show()
+            if pckt.haslayer(IP) and pckt[IP].ttl == 1:
+                print("Raw IP packet received!")
+                if pckt.haslayer(Raw):
+                    print(f"Payload: {pckt[Raw].load}")
 
-        # Start sniffing for ICMP packets
-        print("Waiting for packets...")
-        sniff(filter="icmp", prn=process_packet, timeout=10)
-               
+        # Start sniffing for IP packets
+        print("Waiting for raw IP packets...")
+        sniff(filter="ip", prn=process_packet, timeout=10)
