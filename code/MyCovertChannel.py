@@ -6,22 +6,18 @@ class MyCovertChannel(CovertChannelBase):
 
     def send(self, **kwargs):
         
-        # Generate a random input message for current implementation
+
         input_message = self.generate_random_message( min_length=50, max_length=100 )
 
-
-        # Get log file      
+ 
         log_file_name = kwargs.get("log_file_name", "sender.log")
         
-        # Log input file
+
         self.log_message( message=input_message, log_file_name=log_file_name )
 
-        # Convert input message to binary
+
         binary_message = self.convert_string_message_to_binary(input_message)
 
-        print(f"Input Binary Message: {binary_message}\n")
-
-        index = 1
 
         for bit in binary_message:
             
@@ -29,9 +25,9 @@ class MyCovertChannel(CovertChannelBase):
             header_size = len(ip_layer)
         
             if(bit == "1"):
-                payload = Raw(load="1" * (header_size + 10))  # Payload larger than header
+                payload = Raw(load="1" * (header_size + 10))
             else:
-                payload = Raw(load="0" * (header_size - 5))  # Payload smaller than header
+                payload = Raw(load="0" * (header_size - 5)) 
             
 
             pckt = ip_layer / payload
@@ -39,10 +35,6 @@ class MyCovertChannel(CovertChannelBase):
 
             super().send(pckt)
 
-            
-
-            print(f"Bit {index} sent: {bit}\n")
-            index += 1
 
 
 
@@ -85,8 +77,6 @@ class MyCovertChannel(CovertChannelBase):
                         return
 
                     received_bits = []
-
-                    print(f"Converted 8 bits to character: {char}\n")
                     
 
         sniff(
