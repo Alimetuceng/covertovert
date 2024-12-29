@@ -4,7 +4,11 @@ from datetime import datetime
 import time
 
 class MyCovertChannel(CovertChannelBase):
-    
+    # Members used to calculate the convert channel speed
+    # start_time = 0
+    # end_time = 0
+
+
     def ntp_timestamp(self):
 
         # Calculate the NTP timestamp as a float (seconds since 1900-01-01)
@@ -25,6 +29,7 @@ class MyCovertChannel(CovertChannelBase):
         log_file_name = kwargs.get("log_file_name", "sender.log")
         inter_arrival_long = kwargs.get("inter_arrival_long")
         inter_arrival_short = kwargs.get("inter_arrival_short")
+        dest_ip = kwargs.get("dest_ip")
 
 
         # Log the message to be sent 
@@ -41,8 +46,8 @@ class MyCovertChannel(CovertChannelBase):
             # (Step 1) Create an NTP packet with current time
             orig_timestamp = self.ntp_timestamp()
             ntp = NTP(orig=orig_timestamp)
-            ip = IP(dst="receiver")  # Replace with your desired destination IP
-            udp = UDP(sport=123, dport=123)
+            ip = IP(dst=dest_ip) 
+            udp = UDP()
             pckt = ip / udp / ntp
 
             # (Step 2) Send packet to receiver
@@ -63,8 +68,8 @@ class MyCovertChannel(CovertChannelBase):
         # Create an NTP packet with current time
         orig_timestamp = self.ntp_timestamp()
         ntp = NTP(orig=orig_timestamp)
-        ip = IP(dst="receiver")
-        udp = UDP(sport=123, dport=123)
+        ip = IP(dst=dest_ip)
+        udp = UDP()
         pckt = ip / udp / ntp
 
         # Send packet to receiver
@@ -72,6 +77,9 @@ class MyCovertChannel(CovertChannelBase):
 
 
     def receive(self, **kwargs):
+
+        # Start timer
+        # self.start_time = datetime.utcnow()
 
         # Initialize from parameters
         log_file_name = kwargs.get("log_file_name")
@@ -135,7 +143,7 @@ class MyCovertChannel(CovertChannelBase):
                 previous_timestamp = current_orig
 
         sniff(
-            filter="udp and port 123",
+            filter="udp",
             prn=process_packet,
             stop_filter=lambda x: stop_sniffing["stop"]
         )
@@ -146,3 +154,7 @@ class MyCovertChannel(CovertChannelBase):
         # Log the received message
         self.log_message(message=merged_message, log_file_name=log_file_name)
 
+        # Operations used to calculate convert channel speed
+        # End timer
+        # self.end_time = datetime.utcnow()
+        # print(self.end_time-self.start_time)

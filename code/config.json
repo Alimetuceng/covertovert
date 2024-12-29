@@ -3,9 +3,10 @@
   "send": {
     "parameters": {
       "log_file_name": "sender.log",
-      "message": "1234567 1234567.",
+      "message": "0123456789 ABCDEFG.",
       "inter_arrival_short": 0.001,
-      "inter_arrival_long": 0.06
+      "inter_arrival_long": 0.06,
+      "dest_ip":"receiver"
       
     }
   },
