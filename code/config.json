@@ -3,7 +3,7 @@
   "send": {
     "parameters": {
       "log_file_name": "sender.log",
-      "message": "Random Message Ready to be sent .",
+      "message": "1234567 1234567.",
       "inter_arrival_short": 0.001,
       "inter_arrival_long": 0.06
       
