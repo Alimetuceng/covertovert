@@ -1,9 +1,9 @@
 {
-  "covert_channel_code": "storage_packet_size",
+  "covert_channel_code": "CTC-PIT-NTP",
   "send": {
     "parameters": {
       "log_file_name": "sender.log",
-      "message": "0123456789 ABCDEFG.",
+      "message": "0123456789 abcdefr.",
       "inter_arrival_short": 0.001,
       "inter_arrival_long": 0.06,
       "dest_ip":"receiver"
@@ -13,7 +13,7 @@
   "receive": {
     "parameters": {
       "log_file_name": "receiver.log",
-      "inter_arrival_threshold": 0.06
+      "inter_arrival_threshold": 0.04
     }
   }
 }
